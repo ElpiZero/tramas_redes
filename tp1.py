@@ -28,43 +28,67 @@ def print_listas(arr):
     return
 
 def longitud(arr):
-    correcto=0
-    incorrecto=0
+    longitud_correcta = 0
+    longitud_incorrecta = 0
+    checkSum_correcto = 0
+    checkSum_incorrecto = 0
 
     for i in range (0, len(arr)):
         current= arr[i]
         hex= current[2:6]
         decimal= int(hex, 16)
-        long= (len(arr[i])-8)//2
+        long= (len(arr[i])-8) // 2
         
-        if current.find("7D7E")!=-1:
-            long -=1
+        if current.find("7D7E") != -1:
+            long -= 1
             
-        if decimal==long:
-            correcto+=1
+        if decimal == long:
+            longitud_correcta += 1
+            if "7D7E" in current:
+                current = sacar7D(current)
+            if checkSum(current):
+                checkSum_correcto += 1
+            else:
+                checkSum_incorrecto += 1
+                print("Trama con checkSum incorrecta. Número: ", i, " | ", current)
         else:
-            incorrecto+=1
+            longitud_incorrecta += 1
             print("Trama incorrecta. Número: ", i, " | ", arr[i])
-    return "Tramas correctas: ", correcto, "Tramas incorrectas: ", incorrecto
+    return "Tramas correctas: ", longitud_correcta, "Tramas incorrectas: ", longitud_incorrecta, "Tramas con checkSum correcto: ", checkSum_correcto, "Tramas con checkSum incorrecto: ", checkSum_incorrecto
 
 def verificar_secuencia_escape(tramas):
-    posicion_7D = 0
     trama_sin_secuencia_escape = ""
     contador_secuencia_escape = 0
     for i in range(len(tramas)):
         trama = tramas[i]
         if "7D7E" in trama:
             contador_secuencia_escape += 1
-            posicion_7D = tramas[i].find("7D")
-            trama_sin_secuencia_escape = tramas[i][0:posicion_7D]
-            trama_sin_secuencia_escape = trama_sin_secuencia_escape + tramas[i][posicion_7D + 2 : ]
+            trama_sin_secuencia_escape = sacar7D(trama)
             print("Trama con secuencia de escape. Número: ", i, " | ", trama_sin_secuencia_escape)
     return contador_secuencia_escape
 
-#def checkSum(arr):
-    
-    
+def sacar7D(trama):
+    trama_sin_secuencia_escape = ""
+    if "7D7E" in trama:
+        posicion_7D = trama.find("7D")
+        trama_sin_secuencia_escape = trama[0:posicion_7D]
+        trama_sin_secuencia_escape = trama_sin_secuencia_escape + trama[posicion_7D + 2 : ]
+    return trama_sin_secuencia_escape
+
+def checkSum(trama):
+    sum = 0
+    for i in range(6,len(trama)-2,2):
+        byte = trama[i:i+2]
+        byte = int(byte, 16)
+        sum += byte
+    operacion_and = sum & 255
+    checksum = 255 - operacion_and
+    checksum = hex(checksum)
+    byte = trama[len(trama)-2:]
+    byte = int(byte, 16)
+    byte = hex(byte)
+    return byte == checksum
 
 #print_listas(dividir_tramas("Tramas_802-15-4.log"))
-#print(longitud(dividir_tramas("Tramas_802-15-4.log")))
-print(verificar_secuencia_escape(dividir_tramas("Tramas_802-15-4.log")))
+print(longitud(dividir_tramas("Tramas_802-15-4.log")))
+#print(verificar_secuencia_escape(dividir_tramas("Tramas_802-15-4.log")))
