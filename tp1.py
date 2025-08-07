@@ -8,10 +8,10 @@ def dividir_tramas(nombre_archivo):
     while i < len(tramas[0]):
         if tramas[0][i:i+2] == "7E":
             if i == 0 or tramas[0][i-2:i] != "7D":
-                 if inicio_trama is not None:
-                     trama = tramas[0][inicio_trama:i]
-                     tramas_totales.append(trama)
-                 inicio_trama = i
+                if inicio_trama is not None:
+                    trama = tramas[0][inicio_trama:i]
+                    tramas_totales.append(trama)
+                inicio_trama = i
             elif tramas[0][i-2:i] == "7D":
                 tramas[0]
             i += 2
@@ -24,7 +24,7 @@ def dividir_tramas(nombre_archivo):
 
 def print_listas(arr):
     for i in range(0,len(arr)):
-        print(arr[i])
+        print(i, arr[i])
     return
 
 def longitud(arr):
@@ -44,12 +44,27 @@ def longitud(arr):
             correcto+=1
         else:
             incorrecto+=1
-    return correcto, incorrecto
+            print("Trama incorrecta. Número: ", i, " | ", arr[i])
+    return "Tramas correctas: ", correcto, "Tramas incorrectas: ", incorrecto
 
-def checkSum(arr):
+def verificar_secuencia_escape(tramas):
+    posicion_7D = 0
+    trama_sin_secuencia_escape = ""
+    contador_secuencia_escape = 0
+    for i in range(len(tramas)):
+        trama = tramas[i]
+        if "7D7E" in trama:
+            contador_secuencia_escape += 1
+            posicion_7D = tramas[i].find("7D")
+            trama_sin_secuencia_escape = tramas[i][0:posicion_7D]
+            trama_sin_secuencia_escape = trama_sin_secuencia_escape + tramas[i][posicion_7D + 2 : ]
+            print("Trama con secuencia de escape. Número: ", i, " | ", trama_sin_secuencia_escape)
+    return contador_secuencia_escape
+
+#def checkSum(arr):
     
     
 
-
-print(longitud(dividir_tramas("Tramas_802-15-4.log")))
-                
+#print_listas(dividir_tramas("Tramas_802-15-4.log"))
+#print(longitud(dividir_tramas("Tramas_802-15-4.log")))
+print(verificar_secuencia_escape(dividir_tramas("Tramas_802-15-4.log")))
