@@ -19,7 +19,7 @@ def dividir_tramas(nombre_archivo):
             i += 2
             
     if inicio_trama is not None:
-        tramas_totales.append(tramas[0][inicio_trama:])
+        tramas_totales.append(tramas[0][inicio_trama:-1])
     return tramas_totales
 
 def print_listas(arr):
@@ -30,8 +30,6 @@ def print_listas(arr):
 def longitud(arr):
     longitud_correcta = 0
     longitud_incorrecta = 0
-    checkSum_correcto = 0
-    checkSum_incorrecto = 0
 
     for i in range (0, len(arr)):
         current= arr[i]
@@ -46,15 +44,10 @@ def longitud(arr):
             longitud_correcta += 1
             if "7D7E" in current:
                 current = sacar7D(current)
-            if checkSum(current):
-                checkSum_correcto += 1
-            else:
-                checkSum_incorrecto += 1
-                print("Trama con checkSum incorrecta. Número: ", i, " | ", current)
         else:
             longitud_incorrecta += 1
             print("Trama incorrecta. Número: ", i, " | ", arr[i])
-    return "Tramas correctas: ", longitud_correcta, "Tramas incorrectas: ", longitud_incorrecta, "Tramas con checkSum correcto: ", checkSum_correcto, "Tramas con checkSum incorrecto: ", checkSum_incorrecto
+    return "Tramas correctas: ", longitud_correcta, "Tramas incorrectas: ", longitud_incorrecta
 
 def verificar_secuencia_escape(tramas):
     trama_sin_secuencia_escape = ""
@@ -75,20 +68,40 @@ def sacar7D(trama):
         trama_sin_secuencia_escape = trama_sin_secuencia_escape + trama[posicion_7D + 2 : ]
     return trama_sin_secuencia_escape
 
-def checkSum(trama):
-    sum = 0
-    for i in range(6,len(trama)-2,2):
-        byte = trama[i:i+2]
-        byte = int(byte, 16)
-        sum += byte
-    operacion_and = sum & 255
-    checksum = 255 - operacion_and
-    checksum = hex(checksum)
-    byte = trama[len(trama)-2:]
-    byte = int(byte, 16)
-    byte = hex(byte)
-    return byte == checksum
+def checkSum(arr):
+    checkSum_correcto = 0
+    checkSum_incorrecto = 0
+    for i in range (0, len(arr)):
+        current= arr[i]
+        hex= current[2:6]
+        decimal= int(hex, 16)
+        long= (len(arr[i])-8) // 2
+        
+        if current.find("7D7E") != -1:
+            long -= 1
+            
+        if decimal == long:
+            if "7D7E" in current:
+                current = sacar7D(current)
+            if checkSumR(current):
+                checkSum_correcto += 1
+            else:
+                checkSum_incorrecto += 1
+                print("Trama con checkSum incorrecta. Número: ", i+1, " | ", current)
+        
+    return "Tramas con checkSum correcto: ", checkSum_correcto, "Tramas con checkSum incorrecto: ", checkSum_incorrecto
 
-#print_listas(dividir_tramas("Tramas_802-15-4.log"))
-print(longitud(dividir_tramas("Tramas_802-15-4.log")))
+def checkSumR(trama):
+    total = 0
+    for i in range(6, len(trama)-2, 2):
+        byte = int(trama[i:i+2], 16)
+        total += byte
+    byte = int(trama[-2:], 16)
+    return ((total + byte) & 0xFF) == 0xFF
+
+
+tramas= dividir_tramas("Tramas_802-15-4.log")
+print(len(tramas))
+print(longitud(tramas))
+print(checkSum(tramas))
 #print(verificar_secuencia_escape(dividir_tramas("Tramas_802-15-4.log")))
