@@ -101,7 +101,7 @@ def checkSumR(trama):
 
 
 tramas= dividir_tramas("Tramas_802-15-4.log")
-print(len(tramas))
+print("La cantidad total de tramas son: ", len(tramas))
 print(longitud(tramas))
 print(checkSum(tramas))
-#print(verificar_secuencia_escape(dividir_tramas("Tramas_802-15-4.log")))
+print("La cantidad total de tramas con secuencia de escape son: ", verificar_secuencia_escape(tramas))
