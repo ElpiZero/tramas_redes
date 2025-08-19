@@ -12,8 +12,6 @@ def dividir_tramas(nombre_archivo):
                     trama = tramas[0][inicio_trama:i]
                     tramas_totales.append(trama)
                 inicio_trama = i
-            elif tramas[0][i-2:i] == "7D":
-                tramas[0]
             i += 2
         else:
             i += 2
