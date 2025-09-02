@@ -1123,7 +1123,7 @@ p {
         .footer_link .link li a:hover {
           color: #0898E7; }
 
-.footer_form .single_form {
+/* .footer_form .single_form {
   margin-top: 30px; }
   .footer_form .single_form textarea, .footer_form .single_form input {
     width: 100%;
@@ -1134,7 +1134,7 @@ p {
   .footer_form .single_form textarea {
     padding-top: 10px;
     resize: none;
-    height: 85px; }
+    height: 85px; } */
 
 /*===== BACK TO TOP =====*/
 .back-to-top {
