@@ -20,10 +20,7 @@ def unirse():
 # Función para enviar mensajes
 def enviar(mensaje, user_name):
     if mensaje == "exit":
-        socket_server.sendto(f"{user_name}: ha abandonado la conversación", ("<broadcast>", 60000))
-        return
-    if mensaje == "nuevo":
-        socket_server.sendto(f"{user_name}: se ha unido a la conversación", ("<broadcast>", 60000))
+        socket_server.sendto(f"{user_name}: ha abandonado la conversación".encode(), ("<broadcast>", 60000))
         return
 
     # Enviar el mensaje general
@@ -59,11 +56,13 @@ def hilo_recibir():
 
 # Hilo para enviar mensajes
 def hilo_enviar(user_name):
+    global corriendo
     while True:
         msg = input("")
         if msg.lower() == "exit":
             enviar("exit", user_name)
             corriendo = False
+            socket_server.close()
             break
         enviar(msg, user_name)
 
