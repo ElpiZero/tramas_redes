@@ -12,7 +12,7 @@ def unirse():
         user_name = input("Ingrese nombre de usuario: ")
         if len(user_name) > 0:
             # Al unirse, se envía un mensaje de "nuevo"
-            enviar("nuevo", user_name)
+            enviar(" nuevo", user_name)
             return user_name
         else:
             print("El nombre de usuario no puede estar vacío. Intente nuevamente.")
@@ -20,7 +20,7 @@ def unirse():
 # Función para enviar mensajes
 def enviar(mensaje, user_name):
     # Enviar el mensaje general
-    socket_server.sendto(f"{user_name}: {mensaje}".encode(), ("<broadcast>", 60000))
+    socket_server.sendto(f"{user_name}:{mensaje}".encode(), ("<broadcast>", 60000))
 
 # Función para recibir mensajes
 def recibir():
