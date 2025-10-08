@@ -36,7 +36,7 @@ def enviar_mensaje(cliente):
 
             mensaje = input("Mensaje servidor:")
     
-            if mensaje.lower =="exit":
+            if mensaje.lower() =="exit":
                 if socket_cliente:
                     print("No es posible cerrar el proceso servidor si hay un cliente conectado")
                 else:
