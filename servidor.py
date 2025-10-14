@@ -1,8 +1,13 @@
 import socket
 import threading
+import os
 
 socket_server=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket_server.bind(("0.0.0.0", 60000))
+
+socket_archivos = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket_archivos.bind(("0.0.0.0", 60001))
+socket_archivos.listen(1)
 
 socket_server.listen(2)
 
@@ -34,8 +39,8 @@ def enviar_mensaje(cliente):
     try:
         while True:
 
-            mensaje = input("Mensaje servidor:")
-    
+            mensaje = input("Mensaje servidor:\n")
+            
             if mensaje.lower() =="exit":
                 if socket_cliente:
                     print("No es posible cerrar el proceso servidor si hay un cliente conectado")
@@ -49,7 +54,6 @@ def enviar_mensaje(cliente):
         print(f"Error al enviar:{error}")
 
 
-
 def recibir_mensaje(cliente):
     global socket_cliente
     respuesta = ""
@@ -57,6 +61,12 @@ def recibir_mensaje(cliente):
         
         try:
             respuesta = socket_cliente.recv(100).decode("utf-8")
+            if not respuesta:
+                print("Cliente desconectado.")
+                break
+            if respuesta.lower().startswith("send_file"):   # detectamos que el cliente quiere enviar un archivo
+                nombre_archivo = respuesta[len("send_file "):]
+                print(f"El cliente envía un archivo: {nombre_archivo}.")
         except Exception as error:
             print(f"Error al recibir:{error}")
             break
@@ -68,8 +78,25 @@ def recibir_mensaje(cliente):
         socket_cliente.close()
         socket_cliente = None
 
-    
-hilo_aceptar = threading.Thread(target=aceptar_peticion)
+def recibir_archivos(): # funcion para recibir los archivos
+    while True:
+        (cliente_archivo, direccion) = socket_archivos.accept()
+        
+        nombre_archivo = cliente_archivo.recv(1024).decode()
+        
+        with open(nombre_archivo, "wb") as archivo:
+            print(f"Guardando archivo en: {os.path.abspath(nombre_archivo)}")
+            while True:
+                bloque = cliente_archivo.recv(1024)
+                if not bloque:
+                    break
+                archivo.write(bloque)
+        cliente_archivo.close()
+        print(f"Archivo {nombre_archivo} recibido correctamente.")
 
+hilo_archivos = threading.Thread(target=recibir_archivos, daemon=True)
+hilo_archivos.start()
+
+hilo_aceptar = threading.Thread(target=aceptar_peticion)
 hilo_aceptar.start()
 hilo_aceptar.join()
