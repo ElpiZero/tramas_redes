@@ -20,7 +20,12 @@ start_input_event = threading.Event()
 def aceptar_peticion():
     global socket_cliente
     while True:
-        (cliente, direcciones) = socket_server.accept()
+        try:
+            (cliente, direcciones) = socket_server.accept()
+        except OSError:
+            print("Socket del servidor cerrado.")
+            break  # termina el loop si el socket ya no existe
+        
         with lock:
             if not socket_cliente:
                 socket_cliente = cliente
@@ -47,11 +52,21 @@ def enviar_mensaje(cliente):
                 else:
                     socket_server.close()
                     break
+            # Verificamos si el cliente está conectado, si no lo está avisamos y seguimos.
+            if socket_cliente is None:
+                print("No hay clientes conectados.")
+                continue
 
-            socket_cliente.send(mensaje.encode())
-            
+            # Intentamos enviar el mensaje, si no se puede el cliente se desconectó y solo podemos cerrar el servidor mediante "exit"
+            try:
+                socket_cliente.send(mensaje.encode())
+            except OSError as e:
+                print(f"Error al enviar: {e}. El cliente se desconectó.")
+                socket_cliente = None
+                continue
+
     except Exception as error:
-        print(f"Error al enviar:{error}")
+        print(f"Error al enviar: {error}")
 
 
 def recibir_mensaje(cliente):

@@ -34,7 +34,6 @@ def enviar_mensaje(socket_cliente):
     except Exception as error:
         print(f"Error al enviar:{error}")
         
-    
     socket_cliente.close()
     return
 
