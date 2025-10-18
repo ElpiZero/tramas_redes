@@ -5,6 +5,10 @@ import os # añadimos librería para verificar si existe el archivo que queremos
 socket_cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket_cliente.connect(("localhost", 60000))
 
+socket_archivos = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket_archivos.bind(("localhost", 60002))
+socket_archivos.listen(1)
+
 def enviar_mensaje(socket_cliente):
     mensaje = ""
     try:
@@ -44,6 +48,9 @@ def recibir_mensaje(socket_cliente):
         
         try:
             respuesta = socket_cliente.recv(100).decode("utf-8")
+            if respuesta.lower().startswith("send_file"):   # detectamos que el servidor quiere enviar un archivo
+                nombre_archivo = respuesta[len("send_file "):]
+                print(f"El servidor envía un archivo: {nombre_archivo}.")
         except Exception as error:
             print(f"Error al recibir:{error}")
             break
@@ -54,7 +61,26 @@ def recibir_mensaje(socket_cliente):
         print(f"Respuesta del servidor: {respuesta}")
         respuesta = respuesta.lower()
     
-    
+
+def recibir_archivos(): # funcion para recibir los archivos
+    while True:
+        (cliente_archivo, direccion) = socket_archivos.accept()
+        
+        nombre_archivo = cliente_archivo.recv(1024).decode()
+        
+        with open(nombre_archivo, "wb") as archivo:
+            print(f"Guardando archivo en: {os.path.abspath(nombre_archivo)}")
+            while True:
+                bloque = cliente_archivo.recv(1024)
+                if not bloque:
+                    break
+                archivo.write(bloque)
+        cliente_archivo.close()
+        print(f"Archivo {nombre_archivo} recibido correctamente.")
+
+hilo_archivos = threading.Thread(target=recibir_archivos, daemon=True)
+hilo_archivos.start()
+
 hilo_envio = threading.Thread(target=enviar_mensaje, args= (socket_cliente,))
 hilo_recepcion = threading.Thread(target=recibir_mensaje, args = (socket_cliente,))
 

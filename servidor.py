@@ -45,7 +45,33 @@ def enviar_mensaje(cliente):
         while True:
 
             mensaje = input("Mensaje servidor:\n")
-            
+            with lock:
+                if socket_cliente is None:
+                    print("No hay clientes conectados. Solo se puede usar \"exit\" para cerrar el servidor.")
+                    if mensaje.lower() == "exit":
+                        socket_server.close()
+                        break
+                    else:
+                        continue
+            if mensaje.lower().startswith("send_file"): # detectamos que queremos enviar un archivo.
+                nombre_archivo = mensaje[len("send_file "):]
+                if os.path.exists(nombre_archivo):  # verificamos la existencia del archivo antes de mandarlo.
+                    print("El archivo se encontró correctamente. Preparando para ser enviado.")
+                    socket_enviar_archivo = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   # creamos una conexión nueva
+                    socket_enviar_archivo.connect(("localhost", 60002))
+                    nombre_sin_ruta = os.path.basename(nombre_archivo)
+                    socket_enviar_archivo.send(nombre_sin_ruta.encode()) # enviamos el nombre del archivo para que el serv. sepa con qué nombre guardarlo.
+                    with open(nombre_archivo, "rb") as archivo: # abrimos el archivo como un binario
+                        bloque = archivo.read(1024)
+                        while bloque:   # le mandamos la información en bloques de 1024B cada uno.
+                            socket_enviar_archivo.send(bloque)
+                            bloque = archivo.read(1024)
+                    socket_enviar_archivo.close()
+                else:
+                    print("No se encontró el archivo.")
+            else:
+                socket_cliente.send(mensaje.encode())
+                mensaje = mensaje.lower()
             if mensaje.lower() =="exit":
                 if socket_cliente:
                     print("No es posible cerrar el proceso servidor si hay un cliente conectado")
@@ -76,12 +102,16 @@ def recibir_mensaje(cliente):
         
         try:
             respuesta = socket_cliente.recv(100).decode("utf-8")
+            
             if not respuesta:
                 print("Cliente desconectado.")
                 break
             if respuesta.lower().startswith("send_file"):   # detectamos que el cliente quiere enviar un archivo
                 nombre_archivo = respuesta[len("send_file "):]
                 print(f"El cliente envía un archivo: {nombre_archivo}.")
+        except (OSError, ConnectionResetError): # excepción para cuando se haga shutdown_client
+            print("El cliente se desconectó mediante una fuerza mayor.")
+            break
         except Exception as error:
             print(f"Error al recibir:{error}")
             break
@@ -98,7 +128,6 @@ def recibir_archivos(): # funcion para recibir los archivos
         (cliente_archivo, direccion) = socket_archivos.accept()
         
         nombre_archivo = cliente_archivo.recv(1024).decode()
-        
         with open(nombre_archivo, "wb") as archivo:
             print(f"Guardando archivo en: {os.path.abspath(nombre_archivo)}")
             while True:
