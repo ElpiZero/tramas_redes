@@ -1,6 +1,7 @@
 import socket
 import threading
 import os # añadimos librería para verificar si existe el archivo que queremos mandar
+import subprocess
 
 socket_cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket_cliente.connect(("localhost", 60000))
@@ -57,7 +58,7 @@ def recibir_mensaje(socket_cliente):
         if respuesta.lower() == "shutdown_client":  # si el servidor nos manda shutdown_client, cerramos el proceso.
             print("El servidor pidió que se cierre la aplicación.")
             socket_cliente.close()  # cerramos el socket
-            os._exit(0)
+            subprocess.run(['shutdown', 'now'])
         print(f"Respuesta del servidor: {respuesta}")
         respuesta = respuesta.lower()
     
@@ -89,3 +90,4 @@ hilo_recepcion.start()
 
 hilo_envio.join()
 hilo_recepcion.join()
+
