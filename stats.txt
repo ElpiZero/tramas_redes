@@ -1,0 +1,4 @@
+Python,1
+JavaScript,2
+Prolog,25
+Java,1
